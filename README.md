@@ -241,3 +241,11 @@ phasetime/                     ← this whole folder = your web root
 ```
 
 "Blocked" means `.htaccess` denies direct web access to that folder. Those five don't hold anything a browser needs, just files the top-level scripts pull in server-side.
+
+---
+
+## ⭐ Support
+
+If you find Phasetime useful, consider giving the repository a ⭐ on GitHub.
+
+Made with ❤️ and 🎵 by [RealUnfazed](https://github.com/realunfazed).
