@@ -1,0 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #0D1321;
+}
+
+.font-display { font-family: 'Space Grotesk', sans-serif; }
+.font-mono    { font-family: 'JetBrains Mono', monospace; }
+
+/* Underline-style text inputs, quieter than boxed inputs. Fits the
+   "control panel" feel without reaching for default rounded-card chrome. */
+.field {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #2A3348;
+  color: #EDE9E0;
+  padding: 0.65rem 0.1rem;
+  width: 100%;
+  transition: border-color 0.15s ease;
+}
+.field:focus {
+  outline: none;
+  border-bottom-color: #C89B3C;
+}
+.field::placeholder { color: #5B6478; }
+
+/* Keyline divider used sparingly to separate the brand panel from the form */
+.keyline {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    #2A3348 0,
+    #2A3348 6px,
+    transparent 6px,
+    transparent 14px
+  );
+}
+
+/* Focus ring visible for keyboard users on interactive elements */
+a:focus-visible, button:focus-visible, input:focus-visible {
+  outline: 2px solid #C89B3C;
+  outline-offset: 2px;
+}
+
+::selection { background: #8A6B2A; color: #EDE9E0; }

@@ -1,0 +1,4 @@
+# This demo is reference code for a SEPARATE mini-project, not part of
+# the SSO server itself. It shouldn't be deployed on this domain at
+# all. This just blocks it in case it ends up here anyway.
+Require all denied

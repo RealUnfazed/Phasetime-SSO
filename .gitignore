@@ -1,0 +1,11 @@
+# Your real config, with real DB credentials and your real domain.
+# never commit this. config/config.example.php is the tracked template;
+# copy it to config/config.php locally and edit that copy instead.
+config/config.php
+
+# Common OS/editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log

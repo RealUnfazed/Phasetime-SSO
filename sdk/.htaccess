@@ -1,0 +1,4 @@
+# Defense in depth: these files should never be reachable over HTTP at
+# all (document root should point at the public/ folder only). This
+# just makes sure a misconfigured vhost doesn't leak them.
+Require all denied
