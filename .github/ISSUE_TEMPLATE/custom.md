@@ -29,4 +29,4 @@ assignees: ""
 > **Do not report security vulnerabilities publicly.**
 >
 > If this concerns a potential security vulnerability, please use a
-> [GitHub Security Advisory](../../security/advisories/new) instead.
+> [GitHub Security Advisory](https://github.com/realunfazed/phasetime-sso/security/advisories/new) instead.

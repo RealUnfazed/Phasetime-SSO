@@ -61,4 +61,4 @@ Remove passwords, tokens, session data, API keys, or other sensitive information
 > **Do not report security vulnerabilities publicly.**
 >
 > If you believe you have found a security vulnerability, please use a
-> [GitHub Security Advisory](../../security/advisories/new) instead.
+> [GitHub Security Advisory](https://github.com/realunfazed/phasetime-sso/security/advisories/new) instead.
