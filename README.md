@@ -87,6 +87,8 @@ Flat layout on purpose: upload everything in this folder straight into whatever 
 
 Testing locally over plain `http://`? Set `cookie_secure` to `false` in `config/config.php`. Browsers won't set `Secure` cookies without HTTPS, so the session just won't stick otherwise.
 
+**Staying signed in.** A login lasts 90 days and renews itself whenever you use it (at most once a day), so you only sign in again after three months away, even if you close the browser in between. Change `lifetime_secs` in `config/config.php` to shorten it. Upgrading an existing install? `config.php` is your own file, so set `lifetime_secs` there yourself; the old default was 8 hours and it won't change on its own. Each app using the SDK gets the same treatment for its local session. Pass `'session_lifetime_secs'` to `new SSOClient([...])` to change it (default 90 days, `0` keeps PHP's own defaults). Deactivating a user in the admin panel now ends their session straight away, however much time it had left.
+
 ---
 
 ## Connecting a mini-project
