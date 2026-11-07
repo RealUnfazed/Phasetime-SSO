@@ -99,14 +99,52 @@ function start_sso_session(int $userId): void
         $expiresAt,
     ]);
 
-    setcookie($cfg['cookie_name'], $sessionId, [
-        'expires'  => time() + $cfg['lifetime_secs'],
+    set_sso_cookie($sessionId, time() + $cfg['lifetime_secs']);
+}
+
+/**
+ * Sends the SSO session cookie with an absolute expiry time. Because it has
+ * an expiry (not a session cookie), it survives the browser being closed.
+ */
+function set_sso_cookie(string $value, int $expires): void
+{
+    $cfg = config()['session'];
+    setcookie($cfg['cookie_name'], $value, [
+        'expires'  => $expires,
         'path'     => '/',
         'domain'   => $cfg['cookie_domain'] ?? '',
         'secure'   => $cfg['cookie_secure'],
         'httponly' => true,
         'samesite' => $cfg['cookie_samesite'],
     ]);
+}
+
+/**
+ * Sliding expiry: push a session's expiry (database row AND cookie) out to a
+ * full lifetime from now, but only if it hasn't been extended recently. The
+ * throttle (renew_after_secs, default one day) keeps this from turning every
+ * page view into a database write.
+ *
+ * Skipped if output has already started, because the new cookie couldn't be
+ * sent and the row and cookie must always move together. The next request
+ * will renew it instead.
+ */
+function renew_sso_session_if_due(array $session): void
+{
+    $cfg        = config()['session'];
+    $lifetime   = (int) $cfg['lifetime_secs'];
+    // Never wait longer than half the lifetime, so short custom lifetimes still slide.
+    $renewAfter = min((int) ($cfg['renew_after_secs'] ?? 86400), intdiv($lifetime, 2));
+
+    $remaining = strtotime($session['expires_at']) - time();
+    if ($lifetime - $remaining < $renewAfter || headers_sent()) {
+        return;
+    }
+
+    $newExpiry = time() + $lifetime;
+    db()->prepare('UPDATE sso_sessions SET expires_at = ? WHERE id = ?')
+        ->execute([date('Y-m-d H:i:s', $newExpiry), $session['id']]);
+    set_sso_cookie($session['id'], $newExpiry);
 }
 
 /** Returns the logged-in user's row, or null if there's no valid SSO session. */
@@ -126,7 +164,17 @@ function current_sso_user(): ?array
         return null;
     }
 
-    return find_user_by_id((int) $session['user_id']);
+    $user = find_user_by_id((int) $session['user_id']);
+
+    // A deactivated account must not keep a working session. Sessions that
+    // last months can't rely on "it'll expire soon anyway" any more.
+    if (!$user || !$user['is_active']) {
+        return null;
+    }
+
+    renew_sso_session_if_due($session);
+
+    return $user;
 }
 
 function destroy_sso_session(): void
@@ -139,14 +187,7 @@ function destroy_sso_session(): void
         $stmt->execute([$sessionId]);
     }
 
-    setcookie($cfg['cookie_name'], '', [
-        'expires'  => time() - 3600,
-        'path'     => '/',
-        'domain'   => $cfg['cookie_domain'] ?? '',
-        'secure'   => $cfg['cookie_secure'],
-        'httponly' => true,
-        'samesite' => $cfg['cookie_samesite'],
-    ]);
+    set_sso_cookie('', time() - 3600);
 }
 
 // ===================================================================

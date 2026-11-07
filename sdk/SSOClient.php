@@ -43,7 +43,50 @@ class SSOClient
         $this->redirectUri  = $config['redirect_uri'];
 
         if (session_status() !== PHP_SESSION_ACTIVE) {
+            // Optional: 'session_lifetime_secs' (default 90 days, 0 keeps PHP's defaults).
+            $this->startSession((int) ($config['session_lifetime_secs'] ?? 60 * 60 * 24 * 90));
+        }
+    }
+
+    /**
+     * PHP's default session cookie is dropped when the browser closes, and
+     * PHP may delete the session data on the server after about 24 minutes
+     * of inactivity. Either one signs the user out of this app. Here the
+     * cookie gets a real expiry, re-sent on every request so it slides
+     * (PHP itself only sends it when a session is first created), and the
+     * server-side lifetime is raised to match.
+     *
+     * Only takes effect if SSOClient is created before your own code calls
+     * session_start(). If the session is already running, it's left alone.
+     * On a shared host also consider a private session.save_path, since
+     * another site's cleanup can still delete files in a shared directory.
+     */
+    private function startSession(int $lifetime): void
+    {
+        if ($lifetime <= 0 || headers_sent()) {
             session_start();
+            return;
+        }
+
+        ini_set('session.gc_maxlifetime', (string) max($lifetime, (int) ini_get('session.gc_maxlifetime')));
+
+        $params = session_get_cookie_params();
+        $https  = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+        $cookie = [
+            'path'     => $params['path'],
+            'domain'   => $params['domain'],
+            'secure'   => $params['secure'] || $https,
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ];
+
+        session_set_cookie_params(['lifetime' => $lifetime] + $cookie);
+        session_start();
+
+        // A returning visitor already has the cookie, so PHP won't send it
+        // again. Re-send it to push the expiry out by a full lifetime.
+        if (isset($_COOKIE[session_name()])) {
+            setcookie(session_name(), session_id(), ['expires' => time() + $lifetime] + $cookie);
         }
     }
 

@@ -41,7 +41,12 @@ return [
     // -----------------------------------------------------------
     'session' => [
         'cookie_name'     => 'sso_session',
-        'lifetime_secs'   => 60 * 60 * 8,      // 8 hours of inactivity-free life
+        // How long a login lasts. This is a sliding window: whenever the
+        // session is used, its expiry is pushed out again (at most once per
+        // renew_after_secs), so you stay signed in as long as you keep
+        // showing up, and only get signed out after this long away.
+        'lifetime_secs'   => 60 * 60 * 24 * 90,  // 90 days
+        'renew_after_secs' => 60 * 60 * 24,      // extend the expiry at most once a day
         // Only set a custom cookie domain if every client shares a parent
         // domain (e.g. ".yourdomain.com"). Leave null if your mini-projects
         // live on unrelated domains. The redirect flow doesn't need it.
